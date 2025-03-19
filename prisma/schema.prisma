@@ -1,0 +1,104 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       Int     @id @default(autoincrement())
+  name     String
+  tel      String
+  email    String  @unique
+  password String
+  photoUrl String?
+  children Child[]
+  posts    Post[]
+}
+
+model Child {
+  id        Int      @id @default(autoincrement())
+  parentId  Int
+  parent    User     @relation(fields: [parentId], references: [id])
+  name      String
+  nameKana  String
+  birthday  DateTime
+  allergens String?
+  milk      Float? // ミルク量を数値で管理
+  photoUrl  String?
+  posts     Post[]
+}
+
+model Facility {
+  id       Int       @id @default(autoincrement())
+  name     String
+  classes  Class[]
+  managers Manager[]
+}
+
+model Class {
+  id         Int      @id @default(autoincrement())
+  name       String
+  facilityId Int
+  facility   Facility @relation(fields: [facilityId], references: [id])
+}
+
+model Manager {
+  id         Int      @id @default(autoincrement())
+  name       String
+  email      String   @unique
+  facilityId Int
+  facility   Facility @relation(fields: [facilityId], references: [id])
+}
+
+model Post {
+  id                 Int       @id @default(autoincrement())
+  childId            Int
+  child              Child     @relation(fields: [childId], references: [id])
+  parentId           Int
+  parent             User      @relation(fields: [parentId], references: [id])
+  postDay            DateTime
+  pickUpPerson       String
+  temperature        String
+  messages           String?
+  medicationRequired Boolean
+  typeOfMedication   String? // 薬の種類はオプション
+  timingOfMedication String?
+  log                Log?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  deletedAt          DateTime?
+}
+
+model Log {
+  id        Int       @id @default(autoincrement())
+  postId    Int       @unique // postsと1対1の関係
+  post      Post      @relation(fields: [postId], references: [id])
+  scenes    String
+  photoUrl  String?
+  staff     String
+  events    Event[]
+  createdAt DateTime  @default(now()) // 作成日時
+  updatedAt DateTime  @updatedAt // 更新日時
+  deletedAt DateTime? // ソフトデリート用
+}
+
+model Event {
+  id                  Int       @id @default(autoincrement())
+  logId               Int
+  log                 Log       @relation(fields: [logId], references: [id])
+  eventOccurrenceTime DateTime
+  title               String
+  details             String
+  createdAt           DateTime  @default(now()) // 作成日時
+  updatedAt           DateTime  @updatedAt // 更新日時
+  deletedAt           DateTime? // ソフトデリート用
+}
