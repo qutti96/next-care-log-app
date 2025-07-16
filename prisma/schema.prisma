@@ -42,6 +42,7 @@ model Facility {
   name     String
   classes  Class[]
   managers Manager[]
+  staff    Staff[] // Add this line to complete the relation with Staff
 }
 
 model Class {
@@ -49,6 +50,7 @@ model Class {
   name       String
   facilityId Int
   facility   Facility @relation(fields: [facilityId], references: [id])
+  staff      Staff[]
 }
 
 model Manager {
@@ -57,6 +59,16 @@ model Manager {
   email      String   @unique
   facilityId Int
   facility   Facility @relation(fields: [facilityId], references: [id])
+}
+
+model Staff {
+  id         Int      @id @default(autoincrement())
+  name       String
+  email      String   @unique
+  facilityId Int
+  classId    Int
+  facility   Facility @relation(fields: [facilityId], references: [id])
+  class      Class    @relation(fields: [classId], references: [id])
 }
 
 model Post {
